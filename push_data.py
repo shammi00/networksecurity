@@ -2,6 +2,7 @@ import os, sys, json
 import pandas as pd
 import numpy as np
 import pymongo
+from pymongo import collection
 from networksecurity.exception.exception import NetworkSecurityException
 from networksecurity.logging.logger import logging
 
@@ -38,14 +39,16 @@ class NetworkDataExtract():
             self.collection = collection
             self.records = records
 
-            self.mongo_client = pymongo.MongoClient(MONGO_DB_URL)
+            self.mongo_client = pymongo.MongoClient(MONGO_DB_URL, tlsCAFile=ca)
             self.database = self.mongo_client[self.database]
             
             self.collection = self.database[self.collection]
+            # self.collection.insert_many(self.records)
+            self.collection.delete_many({})  # Delete all existing records
             self.collection.insert_many(self.records)
             return len(self.records)
         except Exception as e:
-            raise NetworkSecurityException(e, sys)
+            raise NetworkSecurityException(e, sys) from e
 
 if __name__ == "__main__":
     FILE_PATH = "Network_Data/phisingData.csv"
