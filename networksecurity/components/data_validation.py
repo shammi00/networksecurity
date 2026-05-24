@@ -138,12 +138,14 @@ class DataValidation:
             if status:
                 dir_path = os.path.dirname(self.data_validation_config.valid_data_train_file_path)
                 os.makedirs(dir_path, exist_ok=True)
+                feature_names = train_dataframe.columns.tolist()
                 train_dataframe.to_csv(self.data_validation_config.valid_data_train_file_path, index = False, header = True)
                 test_dataframe.to_csv(self.data_validation_config.valid_data_test_file_path, index = False, header = True)
 
             else:
                 dir_path = os.path.dirname(self.data_validation_config.invalid_data_train_file_path)
                 os.makedirs(dir_path, exist_ok=True)
+                feature_names = train_dataframe.columns.tolist()
                 train_dataframe.to_csv(self.data_validation_config.invalid_data_train_file_path, index = False, header = True)
                 test_dataframe.to_csv(self.data_validation_config.invalid_data_test_file_path, index = False, header = True)
             
@@ -153,7 +155,8 @@ class DataValidation:
                 valid_test_file_path=self.data_validation_config.valid_data_test_file_path,
                 invalid_train_file_path=self.data_validation_config.invalid_data_train_file_path,
                 invalid_test_file_path=self.data_validation_config.invalid_data_test_file_path,
-                drift_report_file_path=self.data_validation_config.drift_report_file_path
+                drift_report_file_path=self.data_validation_config.drift_report_file_path,
+                feature_names=feature_names
             )
 
             return data_validation_artifact

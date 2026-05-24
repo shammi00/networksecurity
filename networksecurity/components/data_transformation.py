@@ -58,19 +58,19 @@ class DataTransformation:
             logging.info("Starting the data transformation")
             
             # read the validated train and test data
-            target_feature_train_df = DataTransformation.read_data(self.data_validation_artifact.valid_train_file_path)
-            target_feature_test_df = DataTransformation.read_data(self.data_validation_artifact.valid_test_file_path)
+            train_df = DataTransformation.read_data(self.data_validation_artifact.valid_train_file_path)
+            test_df = DataTransformation.read_data(self.data_validation_artifact.valid_test_file_path)
 
             # training dataframe
             # input_feature_train_df = target_feature_train_df.drop(TARGET_COLUMN, axis=1)
-            input_feature_train_df = target_feature_train_df.drop(columns=[TARGET_COLUMN], axis=1)
-            target_feature_train_df = target_feature_train_df[TARGET_COLUMN]
-            target_feature_train_arr = target_feature_train_df.replace(-1, 0)
+            input_feature_train_df = train_df.drop(columns=[TARGET_COLUMN], axis=1)
+            target_feature_train_df = train_df[TARGET_COLUMN]
+            target_feature_train_df = target_feature_train_df.replace(-1, 0)
 
             # testing dataframe
-            input_feature_test_df = target_feature_test_df.drop(columns=[TARGET_COLUMN], axis=1)
-            target_feature_test_df = target_feature_test_df[TARGET_COLUMN]
-            target_feature_test_arr = target_feature_test_df.replace(-1, 0)
+            input_feature_test_df = test_df.drop(columns=[TARGET_COLUMN], axis=1)
+            target_feature_test_df = test_df[TARGET_COLUMN]
+            target_feature_test_df = target_feature_test_df.replace(-1, 0)
 
             ## KNN Imputer
             preprocessor = self.get_data_transformer_object()
@@ -87,13 +87,12 @@ class DataTransformation:
             save_numpy_array_data(self.data_transformation_config.transformed_test_file_path, test_arr)
             save_object(self.data_transformation_config.transformed_object_file_path, preprocessor_object)
 
-            save_object("final_model/preprocessor.pkl", preprocessor_object)
-
             ## preparing artifacts
             data_transformation_artifact = DataTransformationArtifact(
                 transformed_object_file_path = self.data_transformation_config.transformed_object_file_path,
                 transformed_train_file_path = self.data_transformation_config.transformed_train_file_path,
-                transformed_test_file_path = self.data_transformation_config.transformed_test_file_path
+                transformed_test_file_path = self.data_transformation_config.transformed_test_file_path,
+                valid_train_file_path=self.data_validation_artifact.valid_train_file_path
             )
 
             logging.info(f"Data transformation process completed successfully")

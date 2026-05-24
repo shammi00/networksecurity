@@ -118,3 +118,4 @@ class DataIngestion:
         except Exception as e:
             logging.error(f"Error occurred: {e}")  # Log the error!
             raise NetworkSecurityException(e, sys) from e
+        
