@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Security ML Dashboard</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark-custom sticky-top shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-shield-alt"></i> Network Security ML
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="badge bg-success me-2 my-2">
+                            <i class="fas fa-circle pulse"></i> System Active
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/docs" class="btn btn-outline-light btn-sm my-1">
+                            <i class="fas fa-book"></i> API Docs
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 py-4">
+        
+        <!-- Section 1: Overview Metrics Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-line"></i> Dashboard Overview
+                </h2>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="metric-card">
+                    <div class="metric-icon bg-primary">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h3 class="metric-value">{{ data.total_runs }}</h3>
+                        <p class="metric-label">Total Experiments</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="metric-card">
+                    <div class="metric-icon bg-success">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h3 class="metric-value">{{ "%.4f"|format(data.best_f1_score) }}</h3>
+                        <p class="metric-label">Best F1 Score</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="metric-card">
+                    <div class="metric-icon bg-info">
+                        <i class="fas fa-crosshairs"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h3 class="metric-value">{{ "%.4f"|format(data.best_precision) }}</h3>
+                        <p class="metric-label">Best Precision</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="metric-card">
+                    <div class="metric-icon bg-warning">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h3 class="metric-value">{{ "%.4f"|format(data.best_recall) }}</h3>
+                        <p class="metric-label">Best Recall</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Performance Charts -->
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-area"></i> Performance Analytics
+                </h2>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card chart-card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-chart-line text-primary"></i> Model Performance Trends
+                        </h5>
+                        <canvas id="performanceChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card chart-card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-chart-bar text-success"></i> Best Model Metrics Comparison
+                        </h5>
+                        <canvas id="metricsChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Quick Actions -->
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <h2 class="section-title">
+                    <i class="fas fa-bolt"></i> Quick Actions
+                </h2>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="action-card">
+                    <div class="action-icon bg-gradient-primary">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                    <h5>Train New Model</h5>
+                    <p>Start a new training run with the latest data from MongoDB</p>
+                    <button class="btn btn-primary btn-action" onclick="startTraining()">
+                        <i class="fas fa-rocket"></i> Start Training
+                    </button>
+                    <div id="training-status" style="display:none;"></div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="action-card">
+                    <div class="action-icon bg-gradient-success">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h5>Make Predictions</h5>
+                    <p>Upload a CSV file to get network security predictions</p>
+                    <form id="prediction-form" enctype="multipart/form-data">
+                        <input type="file" id="prediction-file" accept=".csv" class="form-control mb-2" required>
+                        <button type="submit" class="btn btn-success btn-action">
+                            <i class="fas fa-file-upload"></i> Upload & Predict
+                        </button>
+                    </form>
+                    <div id="prediction-result"></div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="action-card">
+                    <div class="action-icon bg-gradient-info">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h5>View Artifacts</h5>
+                    <p>Explore saved models, preprocessors, and training artifacts</p>
+                    <a href="/docs" class="btn btn-info btn-action mb-2">
+                        <i class="fas fa-book"></i> API Documentation
+                    </a>
+                    <a href="https://dagshub.com/shammi00/networksecurity.mlflow" target="_blank" class="btn btn-outline-info btn-action">
+                        <i class="fas fa-external-link-alt"></i> MLflow UI
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Recent Experiments Table -->
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card table-card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-history text-info"></i> Recent Training Experiments
+                        </h5>
+                        
+                        {% if data.recent_runs and data.recent_runs|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" id="experiments-table">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-fingerprint"></i> Run ID</th>
+                                        <th><i class="fas fa-clock"></i> Start Time</th>
+                                        <th><i class="fas fa-star"></i> F1 Score</th>
+                                        <th><i class="fas fa-crosshairs"></i> Precision</th>
+                                        <th><i class="fas fa-chart-line"></i> Recall</th>
+                                        <th><i class="fas fa-info-circle"></i> Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for run in data.recent_runs %}
+                                    <tr>
+                                        <td>
+                                            <code>{{ run.run_id[:8] if run.run_id else 'N/A' }}...</code>
+                                        </td>
+                                        <td>
+                                            <small>{{ run.start_time if run.start_time else 'N/A' }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">
+                                                {{ "%.4f"|format(run['metrics.test_f1_score'] if run['metrics.test_f1_score'] else 0) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {{ "%.4f"|format(run['metrics.test_precision_score'] if run['metrics.test_precision_score'] else 0) }}
+                                        </td>
+                                        <td>
+                                            {{ "%.4f"|format(run['metrics.test_recall_score'] if run['metrics.test_recall_score'] else 0) }}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check"></i> {{ run.status if run.status else 'FINISHED' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-flask"></i>
+                            <h5>No experiments yet</h5>
+                            <p>Start your first training run to see experiment data here.</p>
+                            <button class="btn btn-primary" onclick="startTraining()">
+                                <i class="fas fa-play"></i> Start First Training
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Info Section -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-info-circle text-primary"></i> About This Dashboard
+                        </h5>
+                        <p class="text-secondary">
+                            This dashboard provides real-time monitoring of your Network Security ML pipeline. 
+                            Track model performance, manage training runs, and make predictions all from one place.
+                        </p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> MLflow integration for experiment tracking</li>
+                            <li><i class="fas fa-check text-success"></i> MongoDB Atlas for data management</li>
+                            <li><i class="fas fa-check text-success"></i> Real-time model training and predictions</li>
+                            <li><i class="fas fa-check text-success"></i> Automated data validation and transformation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-cogs text-info"></i> System Information
+                        </h5>
+                        <table class="table table-sm table-borderless">
+                            <tbody>
+                                <tr>
+                                    <td><strong>Pipeline Type:</strong></td>
+                                    <td>Network Security Classification</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Backend:</strong></td>
+                                    <td>FastAPI + MongoDB</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>ML Framework:</strong></td>
+                                    <td>Scikit-learn</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tracking:</strong></td>
+                                    <td>MLflow + DagsHub</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Models:</strong></td>
+                                    <td>Random Forest, Gradient Boosting, AdaBoost</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-5 py-4 bg-light">
+        <div class="container text-center">
+            <p class="text-muted mb-1">
+                <strong>Network Security ML Pipeline</strong> © 2026. All rights reserved.
+            </p>
+            <p class="text-muted small mb-0">
+                Built with <i class="fas fa-heart text-danger"></i> using FastAPI, MLflow & MongoDB
+            </p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

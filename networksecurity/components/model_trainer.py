@@ -25,7 +25,9 @@ from sklearn.ensemble import (
 import mlflow
 from urllib.parse import urlparse
 from mlflow.models import infer_signature
+import dagshub
 
+dagshub.init(repo_owner='shammi00', repo_name='networksecurity', mlflow=True)
 
 class ModelTrainer:
     def __init__(self, model_trainer_config: ModelTrainerConfig,
@@ -110,29 +112,29 @@ class ModelTrainer:
 
             params={
                 "Decision Tree": {
-                    'criterion':['squared_error', 'friedman_mse', 'absolute_error', 'poisson'],
-                    # 'splitter':['best','random'],
+                    # 'criterion':['squared_error', 'friedman_mse', 'absolute_error', 'poisson'],
+                    'splitter':['best','random'],
                     # 'max_features':['sqrt','log2'],
                 },
                 "Random Forest":{
                     # 'criterion':['squared_error', 'friedman_mse', 'absolute_error', 'poisson'],
                 
-                    # 'max_features':['sqrt','log2',None],
-                    'n_estimators': [8,16,32,64,128,256]
+                    'max_features':['sqrt','log2',None],
+                    # 'n_estimators': [8,16,32,64,128,256]
                 },
                 "Gradient Boosting":{
                     # 'loss':['squared_error', 'huber', 'absolute_error', 'quantile'],
                     'learning_rate':[.1,.01,.05,.001],
-                    'subsample':[0.6,0.7,0.75,0.8,0.85,0.9],
-                    # 'criterion':['squared_error', 'friedman_mse'],
+                    # 'subsample':[0.6,0.7,0.75,0.8,0.85,0.9],
+                    'criterion':['squared_error', 'friedman_mse'],
                     # 'max_features':['auto','sqrt','log2'],
                     'n_estimators': [8,16,32,64,128,256]
                 },
                 "Logistic Regression":{},
                 "AdaBoost Classifier":{
                     'learning_rate':[.1,.01,0.5,.001],
-                    # 'loss':['linear','square','exponential'],
-                    'n_estimators': [8,16,32,64,128,256]
+                    'loss':['linear','square','exponential'],
+                    # 'n_estimators': [8,16,32,64,128,256]
                 }
                 
             }
@@ -172,7 +174,7 @@ class ModelTrainer:
                 model_obj=best_model
             )
             save_object(self.model_trainer_config.trained_model_file_path, network_model)
-    
+            save_object("final_model/model.pkl", best_model)
             # predict on training and testing data to get classification metrics
             y_train_pred = best_model.predict(x_train)
             classification_train_metric = get_classification_score(y_train, y_train_pred)
