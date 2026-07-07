@@ -27,7 +27,7 @@ from urllib.parse import urlparse
 from mlflow.models import infer_signature
 import dagshub
 
-dagshub.init(repo_owner='shammi00', repo_name='networksecurity', mlflow=True)
+
 
 class ModelTrainer:
     def __init__(self, model_trainer_config: ModelTrainerConfig,
@@ -46,6 +46,7 @@ class ModelTrainer:
             raise NetworkSecurityException(e, sys) from e
         
     def track_mlflow(self, network_model, train_df, classification_train_metric, classification_test_metric ):
+        dagshub.init(repo_owner='shammi00', repo_name='networksecurity', mlflow=True)
         # mlflow.set_tracking_uri("http://127.0.0.1:5000")
         # mlflow.set_tracking_uri("file:./mlruns")
         # mlflow.set_tracking_uri("sqlite:///mlflow.db")
