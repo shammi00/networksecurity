@@ -80,23 +80,31 @@ async def dashboard(request: Request):
             "recent_runs": runs_df.to_dict('records') if len(runs_df) > 0 else []
         }
         
-        return templates.TemplateResponse("dashboard.html", {
-            "request": request,
-            "data": dashboard_data
-        })
+        return templates.TemplateResponse(
+            request=request,
+            name="dashboard.html",
+            context={
+                "request": request,
+                "data": dashboard_data
+            }
+        )
     except Exception as e:
         logging.error(f"Dashboard error: {e}")
         # Return dashboard with empty data if there's an error
-        return templates.TemplateResponse("dashboard.html", {
-            "request": request,
-            "data": {
-                "total_runs": 0,
-                "best_f1_score": 0.0,
-                "best_precision": 0.0,
-                "best_recall": 0.0,
-                "recent_runs": []
+        return templates.TemplateResponse(
+            request=request,
+            name="dashboard.html",
+            context={
+                "request": request,
+                "data": {
+                    "total_runs": 0,
+                    "best_f1_score": 0.0,
+                    "best_precision": 0.0,
+                    "best_recall": 0.0,
+                    "recent_runs": []
+                }
             }
-        })
+        )
 
 @app.get("/api/mlflow/runs", tags=["api"])
 async def get_mlflow_runs():
@@ -133,8 +141,14 @@ async def predict_route(request:Request,file:UploadFile=File(...)):
         df.to_csv("output_prediction/predicted_data.csv",index=False)
         print(df['predicted_column'])
         table_html=df.to_html(classes="table table-striped")
-        return templates.TemplateResponse("table.html",{"request":request,"table":table_html})
-
+        return templates.TemplateResponse(
+            request=request,
+            name="table.html",
+            context={
+                "request": request,
+                "table": table_html
+            }
+        )
     except Exception as e:
         raise NetworkSecurityException(e,sys)
 
